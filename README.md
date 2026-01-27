@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# Agentic UI Example (Vite + React + CopilotKit)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project demonstrates an **Agentic UI** application built with [React](https://react.dev/), [Vite](https://vitejs.dev/), and [CopilotKit](https://docs.copilotkit.ai/). It showcases how to integrate AI agents into a frontend application to drive dynamic UI updates.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+-   **CopilotKit Integration**: Seamless connection to an AI agent runtime.
+-   **Dynamic UI Components**:
+    -   **Proverbs Card**: A fully interactive component to manage a list of proverbs (add, edit, delete) with user interaction tracking.
+    -   **Weather Card**: A dynamic weather display where properties like location and theme color can be controlled by the agent.
+-   **Custom Backend Runtime**: A Node.js server (`server.ts`) that handles CopilotKit requests and connects to an external agent service.
+-   **Modern Stack**: Built with TypeScript, Tailwind CSS, and Vite for a fast development experience.
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+-   Node.js (v18 or later recommended)
+-   pnpm (preferred) or npm/yarn
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1.  **Install Dependencies**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+    ```bash
+    pnpm install
+    ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2.  **Environment Setup**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+    Ensure you have any necessary environment variables set up. The server expects an agent endpoint running at `http://localhost:8778/api/agentic_ux` (configurable in `server.ts`).
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3.  **Run the Application**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+    To start both the frontend Vite server and the backend Copilot runtime server concurrently:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+    ```bash
+    pnpm dev
+    ```
+
+    -   **Frontend**: `http://localhost:5173`
+    -   **Backend**: `http://localhost:4000`
+
+    *Note: The `dev` script runs `vite && server.ts`. If you need to run them separately:*
+
+    -   Frontend: `pnpm vite`
+    -   Backend: `pnpm server`
+
+## Project Structure
+
+-   **`src/App.tsx`**: Main entry point wrapping the app with `<CopilotKit>`.
+-   **`server.ts`**: Node.js server handling the Copilot Runtime and proxying requests to the AI agent.
+-   **`src/components/`**:
+    -   `proverbs.tsx`: Interactive proverbs management component.
+    -   `weather.tsx`: Agent-controlled weather display component.
+-   **`src/page.tsx`**: (Assumed) The main page layout containing the components.
+
+## Tech Stack
+
+-   **Frontend**: React, TypeScript, Vite, Tailwind CSS
+-   **AI/Agent**: CopilotKit (@copilotkit/react-core, @copilotkit/runtime)
+-   **Server**: Node.js (http), tsx
+
+## Learn More
+
+-   [CopilotKit Documentation](https://docs.copilotkit.ai/)
+-   [Vite Documentation](https://vitejs.dev/)
+-   [React Documentation](https://react.dev/)
