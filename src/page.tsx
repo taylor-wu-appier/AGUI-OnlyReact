@@ -15,9 +15,66 @@ type FieldMetadata = {
   field_type: string;
   description: string;
   field_prompt: string;
-  schema: Record<string, unknown>;
+  schema: FieldMetadata[]|FieldMetadata;
   parser_strategy: "replace" | "merge" | "append";
 };
+
+// 1. 定義基礎的小元件型別 (子層)
+
+// 作者資訊
+interface Author {
+  id: string;
+  name: string;
+  avatarUrl: string;
+  isVerified: boolean; // 是否有藍勾勾
+}
+
+// 圖片資訊 (包含響應式需要的不同尺寸)
+interface ImageVariant {
+  url: string;
+  width: number;
+  height: number;
+}
+
+interface ArticleMedia {
+  id: string;
+  type: 'image' | 'video';
+  altText: string;
+  variants: {
+    thumbnail: ImageVariant; // 巢狀：縮圖
+    original: ImageVariant;  // 巢狀：原圖
+  };
+}
+
+// 標籤
+interface Tag {
+  id: number;
+  label: string;
+  slug: string; // 用於網址路由
+}
+
+// 互動數據
+interface EngagementStats {
+  likes: number;
+  comments: number;
+  shares: number;
+  isLikedByCurrentUser: boolean;
+}
+
+// 2. 組合起來的主型別 (最外層)
+
+interface ArticleCard {
+  id: string;
+  title: string;
+  summary: string;
+  publishDate: string; // ISO 8601 格式
+  
+  // --- 以下為巢狀結構 ---
+  author: Author;        // 物件
+  coverImage: ArticleMedia; // 複雜物件
+  tags: Tag[];           // 物件陣列
+  stats: EngagementStats;// 物件
+}
 
 type FrontendStateData = {
   proverbs: string[];
@@ -32,6 +89,7 @@ type FrontendStateData = {
     receiver: string;
     content: string;
   }[];
+  
 };
 
 type MouseEvent ={
@@ -182,7 +240,7 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
             description: "SMS campaigns",
             field_prompt: `
               When updating campaigns:
-              - Each campaign needs: id, content, status
+              - Each campaign needs: sender , receiver, content
               - Status must be one of: draft, scheduled, sent
               - Generate unique IDs if not provided (use timestamp-based format)
               - Content should be concise SMS-friendly text
@@ -199,6 +257,94 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
               },
             },
             parser_strategy: "replace",
+          },
+          articles: {
+            field_name: "articles",
+            field_type: "array",
+            description: "List of social article cards with nested details",
+            field_prompt: "Create detailed article cards with author, media, and stats.",
+            parser_strategy: "replace", // 建議用 replace，避免合併複雜物件時出錯，或者根據需求改為 append
+            schema: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  title: { type: "string" },
+                  summary: { type: "string" },
+                  publishDate: { type: "string", description: "ISO 8601 format" },
+                  
+                  // Level 1 Nesting: Author
+                  author: {
+                    type: "object",
+                    properties: {
+                      id: { type: "string" },
+                      name: { type: "string" },
+                      avatarUrl: { type: "string" },
+                      isVerified: { type: "boolean" }
+                    },
+                    required: ["name", "avatarUrl"]
+                  },
+
+                  // Level 1 Nesting: Media (Complex)
+                  coverImage: {
+                    type: "object",
+                    properties: {
+                      id: { type: "string" },
+                      type: { type: "string", enum: ["image", "video"] },
+                      altText: { type: "string" },
+                      // Level 2 Nesting: Variants
+                      variants: {
+                        type: "object",
+                        properties: {
+                          thumbnail: {
+                            type: "object",
+                            properties: {
+                              url: { type: "string" },
+                              width: { type: "number" },
+                              height: { type: "number" }
+                            }
+                          },
+                          original: {
+                            type: "object",
+                            properties: {
+                              url: { type: "string" },
+                              width: { type: "number" },
+                              height: { type: "number" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+
+                  // Level 1 Nesting: Array of Objects (Tags)
+                  tags: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        id: { type: "number" },
+                        label: { type: "string" },
+                        slug: { type: "string" }
+                      }
+                    }
+                  },
+
+                  // Level 1 Nesting: Stats
+                  stats: {
+                    type: "object",
+                    properties: {
+                      likes: { type: "number" },
+                      comments: { type: "number" },
+                      shares: { type: "number" },
+                      isLikedByCurrentUser: { type: "boolean" }
+                    }
+                  }
+                },
+                required: ["title", "author", "coverImage"] // 指定必要欄位
+              }
+            }
           },
         },
 
@@ -223,6 +369,8 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
               receiver: "User",
               content: "Hello! How are you?",
             },
+          ],
+          articles:[
           ],
         },
       },
